@@ -826,10 +826,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     // Hide Promo, Programs & Devices when logged in
-                    if (promoSliderSection) promoSliderSection.style.display = 'none';
-                    if (programsSection) programsSection.style.display = 'none';
-                    if (devicesSection) devicesSection.style.display = 'none';
-                    if (faqSection) faqSection.style.display = 'none';
+                    if (promoSliderSection) promoSliderSection.style.setProperty('display', 'none', 'important');
+                    if (programsSection) programsSection.style.setProperty('display', 'none', 'important');
+                    if (devicesSection) devicesSection.style.setProperty('display', 'none', 'important');
+                    if (faqSection) faqSection.style.setProperty('display', 'none', 'important');
 
                     // Show News, Team & Scores when logged in
                     if (latestSection) latestSection.style.display = 'block';
@@ -865,10 +865,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // Show Promo, Programs & Devices when logged out
-                if (promoSliderSection) promoSliderSection.style.display = 'block';
-                if (programsSection) programsSection.style.display = 'block';
-                if (devicesSection) devicesSection.style.display = 'block';
-                if (faqSection) faqSection.style.display = 'block';
+                if (promoSliderSection) promoSliderSection.style.setProperty('display', 'block', 'important');
+                if (programsSection) programsSection.style.setProperty('display', 'block', 'important');
+                if (devicesSection) devicesSection.style.setProperty('display', 'block', 'important');
+                if (faqSection) faqSection.style.setProperty('display', 'block', 'important');
 
                 // Hide News, Team & Scores when logged out
                 if (latestSection) latestSection.style.display = 'none';

@@ -435,47 +435,85 @@
     }
 
     .admin-header {
-        padding: 20px 15px;
-        margin-bottom: 20px;
-        border-radius: 16px;
+        padding: 40px 20px 20px;
+        margin-bottom: 25px;
+        border-radius: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-close-dashboard {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        width: 36px;
+        height: 36px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        margin: 0 !important;
     }
 
     .admin-header-content {
         flex-direction: column;
+        align-items: center;
         text-align: center;
         gap: 15px;
     }
 
     .admin-header h1 {
-        font-size: 22px;
+        font-size: 20px;
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .admin-email {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 5px 15px;
+        border-radius: 50px;
+        font-size: 13px;
+        color: #aaa;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        margin: 0 auto;
+        display: inline-block;
+        width: auto !important;
+        text-align: center;
+        order: 2;
     }
 
     .admin-actions {
         width: 100%;
-        justify-content: center;
-        gap: 10px;
-    }
-
-    .admin-email {
-        width: 100%;
-        text-align: center;
+        margin-top: 10px;
         order: 3;
     }
 
     .btn-admin-logout {
-        flex: 1;
-        order: 1;
+        width: 100%;
+        background: rgba(255, 68, 68, 0.1) !important;
+        border: 1px solid rgba(255, 68, 68, 0.2);
+        color: #ff4444 !important;
+        border-radius: 12px;
+        font-size: 14px;
+        padding: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
     }
 
-    .btn-close-dashboard {
-        order: 2;
-        width: 40px;
-        height: 40px;
+    .btn-admin-logout:hover {
+        background: rgba(255, 68, 68, 0.2) !important;
     }
 
     .admin-main-layout {
         flex-direction: column;
-        gap: 15px;
+        gap: 20px;
     }
 
     .admin-sidebar {
@@ -484,18 +522,18 @@
         top: 0;
         z-index: 100;
         background: var(--dark-bg);
-        margin-bottom: 20px;
-        padding: 5px 0;
+        margin: -10px -10px 10px -10px;
+        padding: 10px;
     }
 
     .admin-nav {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        overflow-x: auto !important;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        overflow-x: auto;
         white-space: nowrap !important;
-        padding: 10px;
-        gap: 10px;
+        padding: 8px;
+        gap: 8px;
         border-radius: 12px;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
@@ -508,12 +546,26 @@
     }
 
     .admin-nav-item {
-        padding: 10px 18px;
+        padding: 10px 20px;
         font-size: 14px;
         width: auto;
         flex-shrink: 0;
         justify-content: center;
-        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        position: relative;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .admin-nav-item.active {
+        background: var(--primary-green) !important;
+        color: #000 !important;
+        box-shadow: 0 4px 15px rgba(39, 209, 127, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .admin-nav-item.active::after {
+        display: none;
+        /* Removed the old indicator if any */
     }
 
     .admin-nav-item i {
@@ -528,21 +580,39 @@
 
     .admin-stats-grid {
         grid-template-columns: 1fr;
-        gap: 12px;
+        gap: 15px;
     }
 
     .admin-stat-card {
         padding: 20px;
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: space-between;
+        align-items: center;
+        text-align: right;
     }
 
     .stat-icon {
-        width: 60px;
-        height: 60px;
-        font-size: 30px;
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+        margin: 0 !important;
+    }
+
+    .stat-info {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .stat-label {
+        font-size: 13px;
+        margin: 0;
     }
 
     .stat-value {
-        font-size: 28px;
+        font-size: 26px;
+        margin: 0;
     }
 
     .admin-management-section {

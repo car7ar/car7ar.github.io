@@ -360,6 +360,7 @@ button {
 .logos-section {
     padding: 10px 0;
     text-align: center;
+    position: relative;
 }
 
 .logos-section h2 {
@@ -1137,6 +1138,19 @@ button {
         display: none;
     }
 
+    .profile-dropdown {
+        left: 0 !important;
+        right: auto !important;
+        min-width: 200px;
+        width: 85vw;
+        max-width: 280px;
+    }
+
+    .profile-dropdown::before {
+        left: 20px !important;
+        right: auto !important;
+    }
+
     /* Section Header */
     .section-header h2 {
         font-size: 30px;
@@ -1523,7 +1537,7 @@ button {
 .profile-dropdown {
     position: absolute;
     top: calc(100% + 15px);
-    right: 0;
+    left: 0;
     background: rgba(15, 15, 15, 0.98);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -1548,7 +1562,7 @@ button {
     content: '';
     position: absolute;
     top: -6px;
-    right: 15px;
+    left: 20px;
     width: 12px;
     height: 12px;
     background: rgba(15, 15, 15, 0.98);
@@ -1989,6 +2003,13 @@ button {
 .latest-section {
     padding: 30px 0;
     margin: 30px 0;
+}
+
+@media (max-width: 768px) {
+    .latest-section {
+        padding: 15px 0;
+        margin: 15px 0;
+    }
 }
 
 .view-all {
