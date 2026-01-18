@@ -644,7 +644,7 @@
                                 <div class="stat-icon">👥</div>
                                 <div class="stat-info">
                                     <span class="stat-label">المستخدمين</span>
-                                    <span class="stat-value">1,234</span>
+                                    <span class="stat-value" id="adminUsersCount">0</span>
                                 </div>
                             </div>
                             <div class="admin-stat-card">
@@ -658,7 +658,7 @@
                                 <div class="stat-icon">📰</div>
                                 <div class="stat-info">
                                     <span class="stat-label">الأخبار</span>
-                                    <span class="stat-value">48</span>
+                                    <span class="stat-value" id="adminNewsCount">0</span>
                                 </div>
                             </div>
                             <div class="admin-stat-card">
@@ -771,13 +771,13 @@
 
                         <div class="stream-admin-control"
                             style="margin-bottom: 30px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
-                            <div id="serversListContainer">
-                                <!-- Dynamic Inputs will be injected here -->
+                            <div id="channelsListContainer">
+                                <!-- Dynamic Channels and Servers will be injected here -->
                             </div>
 
-                            <button class="btn btn-secondary" id="addServerBtn"
+                            <button class="btn btn-secondary" id="addChannelBtn"
                                 style="width: auto; padding: 8px 20px; margin-top: 10px; font-size: 14px;">
-                                <i class="fas fa-plus"></i> إضافة سيرفر آخر
+                                <i class="fas fa-plus-circle"></i> إضافة قناة جديدة
                             </button>
 
                             <hr style="border-color: rgba(255,255,255,0.1); margin: 20px 0;">

@@ -214,8 +214,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveSiteConfigBtn = document.getElementById('saveSiteConfigBtn');
     const siteConfigMsg = document.getElementById('siteConfigMsg');
 
-    const serversListContainer = document.getElementById('serversListContainer');
-    const addServerBtn = document.getElementById('addServerBtn');
+    const channelsListContainer = document.getElementById('channelsListContainer');
+    const addChannelBtn = document.getElementById('addChannelBtn');
     const saveStreamUrlBtn = document.getElementById('saveStreamUrlBtn');
     const streamSaveMsg = document.getElementById('streamSaveMsg');
     const streamServerSelector = document.getElementById('streamServerSelector');
@@ -1121,6 +1121,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             adminWallpapersTableBody.innerHTML = html;
 
+            // تحديث عداد الخلفيات في الإحصائيات
+            if (typeof updateAdminStats === 'function') {
+                updateAdminStats();
+            }
+
         } catch (error) {
             console.error("Error fetching admin wallpapers:", error);
             adminWallpapersTableBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: red;">حدث خطأ في جلب البيانات.</td></tr>';
@@ -1918,11 +1923,57 @@ document.addEventListener('DOMContentLoaded', () => {
             // جلب الأخبار للإدارة
             fetchAdminNews();
 
-            // حساب عدد اللاعبين
-            updateAdminPlayersCount();
+            // تحديث الإحصائيات
+            updateAdminStats();
+
+            // جلب الخلفيات (إذا كان موجود)
+            if (typeof fetchAdminWallpapers === 'function') {
+                fetchAdminWallpapers();
+            }
         }
     }
 
+    // دالة لتحديث إحصائيات لوحة التحكم
+    async function updateAdminStats() {
+        if (!db) return;
+
+        try {
+            // عدد المستخدمين
+            const usersSnapshot = await db.collection('users').get();
+            const usersCount = usersSnapshot.size;
+            const adminUsersCountEl = document.getElementById('adminUsersCount');
+            if (adminUsersCountEl) {
+                adminUsersCountEl.textContent = usersCount.toLocaleString('ar-EG');
+            }
+
+            // عدد اللاعبين
+            const playersSnapshot = await db.collection('players').get();
+            const playersCount = playersSnapshot.size;
+            const adminPlayersCountEl = document.getElementById('adminPlayersCount');
+            if (adminPlayersCountEl) {
+                adminPlayersCountEl.textContent = playersCount.toLocaleString('ar-EG');
+            }
+
+            // عدد الأخبار
+            const newsSnapshot = await db.collection('news').get();
+            const newsCount = newsSnapshot.size;
+            const adminNewsCountEl = document.getElementById('adminNewsCount');
+            if (adminNewsCountEl) {
+                adminNewsCountEl.textContent = newsCount.toLocaleString('ar-EG');
+            }
+
+            // عدد الخلفيات
+            const wallpapersSnapshot = await db.collection('wallpapers').get();
+            const wallpapersCount = wallpapersSnapshot.size;
+            const adminWallpapersCountEl = document.getElementById('adminWallpapersCount');
+            if (adminWallpapersCountEl) {
+                adminWallpapersCountEl.textContent = wallpapersCount.toLocaleString('ar-EG');
+            }
+
+        } catch (error) {
+            console.error('Error updating admin stats:', error);
+        }
+    }
     // --- إعدادات الواجهة (Hero & Team Desc) ---
     // Variables consolidated at the top
 
@@ -2409,92 +2460,240 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Admin Dashboard logic ---
+    let streamChannels = []; // New structure: [{ name: 'Channel 1', servers: [{ name: 'S1', url: '...' }] }]
+    let currentSelectedChannelIdx = 0;
 
-    // Render Server Inputs in Admin Panel
-    function renderServerInputs() {
-        if (!serversListContainer) return;
-        serversListContainer.innerHTML = '';
+    // Render Channel and Server Inputs in Admin Panel
+    function renderChannelInputs() {
+        if (!channelsListContainer) return;
+        channelsListContainer.innerHTML = '';
 
-        // Helper text
         const helperP = document.createElement('p');
         helperP.style.cssText = "color: #888; font-size: 13px; margin-bottom: 20px;";
-        helperP.textContent = "أضف أسماء وسيرفرات البث هنا. سيتم حفظها سحابياً ومحلياً.";
-        serversListContainer.appendChild(helperP);
+        helperP.textContent = "أضف القنوات وسيرفرات البث الخاصة بكل منها هنا.";
+        channelsListContainer.appendChild(helperP);
 
-        streamServers.forEach((server, index) => {
-            const div = document.createElement('div');
-            div.className = 'server-input-group';
-            div.style.cssText = "display: flex; gap: 10px; margin-bottom: 12px; align-items: center; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;";
-            div.innerHTML = `
-                <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
-                    <label style="font-size: 11px; color: #777;">اسم السيرفر</label>
-                    <input type="text" class="server-name" placeholder="سيرفر ${index + 1}" value="${server.name || ''}" 
-                        style="width: 100%; padding: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff;">
+        streamChannels.forEach((channel, cIndex) => {
+            const channelDiv = document.createElement('div');
+            channelDiv.className = 'channel-group';
+            channelDiv.style.cssText = "background: rgba(255,255,255,0.03); padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05);";
+
+            channelDiv.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 5px; min-width: 200px;">
+                        <label style="font-size: 12px; color: var(--primary-green);">اسم القناة</label>
+                        <input type="text" class="channel-name" data-cindex="${cIndex}" placeholder="مثال: SSC 1" value="${channel.name || ''}" 
+                            style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-weight: bold;">
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <button class="btn-move-channel" data-cindex="${cIndex}" data-dir="-1" title="نقل القناة للأعلى"
+                            style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 6px; cursor: pointer; ${cIndex === 0 ? 'opacity: 0.3; pointer-events: none;' : ''}">
+                            <i class="fas fa-chevron-up"></i>
+                        </button>
+                        <button class="btn-move-channel" data-cindex="${cIndex}" data-dir="1" title="نقل القناة للأسفل"
+                            style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 6px; cursor: pointer; ${cIndex === streamChannels.length - 1 ? 'opacity: 0.3; pointer-events: none;' : ''}">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <button class="btn-remove-channel" data-cindex="${cIndex}" title="حذف القناة"
+                            style="background: rgba(255,68,68,0.1); color: #ff4444; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
+                            <i class="fas fa-trash-alt"></i> حذف
+                        </button>
+                    </div>
                 </div>
-                <div style="flex: 2; display: flex; flex-direction: column; gap: 5px;">
-                    <label style="font-size: 11px; color: #777;">رابط البث</label>
-                    <input type="text" class="server-url" placeholder="https://..." value="${server.url}" 
-                        style="width: 100%; padding: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff;">
+                <div class="servers-container" id="servers-for-channel-${cIndex}" style="margin-right: 10px; border-right: 2px solid rgba(255,255,255,0.05); padding-right: 10px;">
+                    <!-- Servers injected here -->
                 </div>
-                <button class="btn-remove-server" data-index="${index}" title="حذف"
-                    style="background: rgba(255,68,68,0.1); color: #ff4444; border: none; padding: 10px; border-radius: 6px; cursor: pointer; margin-top: 15px;">
-                    <i class="fas fa-trash"></i>
+                <button class="btn-add-server-to-channel" data-cindex="${cIndex}"
+                    style="background: transparent; color: #aaa; border: 1px dashed rgba(255,255,255,0.2); padding: 10px 15px; border-radius: 6px; cursor: pointer; margin-top: 10px; font-size: 13px; width: 100%;">
+                    <i class="fas fa-plus"></i> إضافة سيرفر لهذه القناة
                 </button>
             `;
-            serversListContainer.appendChild(div);
+
+            const serversContainer = channelDiv.querySelector('.servers-container');
+            channel.servers.forEach((server, sIndex) => {
+                const sDiv = document.createElement('div');
+                sDiv.className = 'server-input-group';
+                sDiv.style.cssText = "display: flex; gap: 10px; margin-bottom: 15px; align-items: flex-end; flex-wrap: wrap; background: rgba(0,0,0,0.1); padding: 10px; border-radius: 8px;";
+                sDiv.innerHTML = `
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 120px;">
+                        <label style="font-size: 11px; color: #777;">اسم السيرفر</label>
+                        <input type="text" class="server-name" data-cindex="${cIndex}" data-sindex="${sIndex}" placeholder="سيرفر ${sIndex + 1}" value="${server.name || ''}" 
+                            style="width: 100%; padding: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff;">
+                    </div>
+                    <div style="flex: 2; display: flex; flex-direction: column; gap: 4px; min-width: 200px;">
+                        <label style="font-size: 11px; color: #777;">رابط البث</label>
+                        <input type="text" class="server-url" data-cindex="${cIndex}" data-sindex="${sIndex}" placeholder="https://..." value="${server.url}" 
+                            style="width: 100%; padding: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff;">
+                    </div>
+                    <div style="display: flex; gap: 5px; width: 100%; justify-content: flex-end; margin-top: 5px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">
+                        <button class="btn-move-server" data-cindex="${cIndex}" data-sindex="${sIndex}" data-dir="-1" title="نقل للأعلى"
+                            style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 6px; cursor: pointer; ${sIndex === 0 ? 'opacity: 0.3; pointer-events: none;' : ''}">
+                            <i class="fas fa-chevron-up"></i>
+                        </button>
+                        <button class="btn-move-server" data-cindex="${cIndex}" data-sindex="${sIndex}" data-dir="1" title="نقل للأسفل"
+                            style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 6px; cursor: pointer; ${sIndex === channel.servers.length - 1 ? 'opacity: 0.3; pointer-events: none;' : ''}">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <button class="btn-remove-server" data-cindex="${cIndex}" data-sindex="${sIndex}" title="حذف السيرفر"
+                            style="background: rgba(255,68,68,0.1); color: #ff4444; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
+                            <i class="fas fa-times"></i> حذف
+                        </button>
+                    </div>
+                `;
+                serversContainer.appendChild(sDiv);
+            });
+
+            channelsListContainer.appendChild(channelDiv);
         });
 
         // Add Listeners
-        document.querySelectorAll('.btn-remove-server').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const idx = parseInt(e.currentTarget.dataset.index);
-                streamServers.splice(idx, 1);
-                renderServerInputs();
-            });
+        document.querySelectorAll('.btn-remove-channel').forEach(btn => {
+            btn.onclick = (e) => {
+                const cIdx = parseInt(e.currentTarget.dataset.cindex);
+                if (confirm('هل أنت متأكد من حذف القناة وجميع سيرفراتها؟')) {
+                    streamChannels.splice(cIdx, 1);
+                    renderChannelInputs();
+                }
+            };
         });
 
-        // Auto Save to data model on change
-        document.querySelectorAll('.server-name').forEach((input, i) => {
-            input.addEventListener('change', (e) => {
-                streamServers[i].name = e.target.value.trim();
-            });
+        document.querySelectorAll('.btn-move-channel').forEach(btn => {
+            btn.onclick = (e) => {
+                const cIdx = parseInt(e.currentTarget.dataset.cindex);
+                const dir = parseInt(e.currentTarget.dataset.dir);
+                const targetIdx = cIdx + dir;
+
+                if (targetIdx >= 0 && targetIdx < streamChannels.length) {
+                    const temp = streamChannels[cIdx];
+                    streamChannels[cIdx] = streamChannels[targetIdx];
+                    streamChannels[targetIdx] = temp;
+                    renderChannelInputs();
+                }
+            };
         });
-        document.querySelectorAll('.server-url').forEach((input, i) => {
-            input.addEventListener('change', (e) => {
-                streamServers[i].url = e.target.value.trim();
-            });
+
+        document.querySelectorAll('.btn-add-server-to-channel').forEach(btn => {
+            btn.onclick = (e) => {
+                const cIdx = parseInt(e.currentTarget.dataset.cindex);
+                streamChannels[cIdx].servers.push({ name: '', url: '' });
+                renderChannelInputs();
+            };
+        });
+
+        document.querySelectorAll('.btn-remove-server').forEach(btn => {
+            btn.onclick = (e) => {
+                const cIdx = parseInt(e.currentTarget.dataset.cindex);
+                const sIdx = parseInt(e.currentTarget.dataset.sindex);
+                streamChannels[cIdx].servers.splice(sIdx, 1);
+                renderChannelInputs();
+            };
+        });
+
+        document.querySelectorAll('.btn-move-server').forEach(btn => {
+            btn.onclick = (e) => {
+                const cIdx = parseInt(e.currentTarget.dataset.cindex);
+                const sIdx = parseInt(e.currentTarget.dataset.sindex);
+                const dir = parseInt(e.currentTarget.dataset.dir);
+                const targetIdx = sIdx + dir;
+
+                if (targetIdx >= 0 && targetIdx < streamChannels[cIdx].servers.length) {
+                    const temp = streamChannels[cIdx].servers[sIdx];
+                    streamChannels[cIdx].servers[sIdx] = streamChannels[cIdx].servers[targetIdx];
+                    streamChannels[cIdx].servers[targetIdx] = temp;
+                    renderChannelInputs();
+                }
+            };
+        });
+
+        // Data sync
+        document.querySelectorAll('.channel-name').forEach(input => {
+            input.onchange = (e) => {
+                const idx = parseInt(e.target.dataset.cindex);
+                streamChannels[idx].name = e.target.value.trim();
+            };
+        });
+
+        document.querySelectorAll('.server-name').forEach(input => {
+            input.onchange = (e) => {
+                const cIdx = parseInt(e.target.dataset.cindex);
+                const sIdx = parseInt(e.target.dataset.sindex);
+                streamChannels[cIdx].servers[sIdx].name = e.target.value.trim();
+            };
+        });
+
+        document.querySelectorAll('.server-url').forEach(input => {
+            input.onchange = (e) => {
+                const cIdx = parseInt(e.target.dataset.cindex);
+                const sIdx = parseInt(e.target.dataset.sindex);
+                streamChannels[cIdx].servers[sIdx].url = e.target.value.trim();
+            };
         });
     }
 
-    // Add New Server Button
-    addServerBtn?.addEventListener('click', () => {
-        streamServers.push({ url: '', name: '' });
-        renderServerInputs();
+    addChannelBtn?.addEventListener('click', () => {
+        streamChannels.push({ name: '', servers: [{ name: '', url: '' }] });
+        renderChannelInputs();
     });
 
     // --- Player UI Logic ---
 
-    // Render Server Selection Buttons in Modal
+    // Render Selection UI in Modal
     function renderServerButtons() {
         if (!streamServerSelector) return;
         streamServerSelector.innerHTML = '';
 
-        streamServers.forEach((server, index) => {
-            const btn = document.createElement('button');
-            btn.className = `btn-server ${index === 0 ? 'premium' : ''}`;
-            const serverName = server.name || `سيرفر ${index + 1}`;
-            btn.innerHTML = `<i class="fas fa-play"></i> ${serverName}`;
+        if (streamChannels.length === 0) {
+            streamServerSelector.innerHTML = '<p style="color: #666; width: 100%; text-align: center;">لا توجد سيرفرات متاحة حالياً</p>';
+            return;
+        }
 
-            btn.onclick = (e) => {
-                document.querySelectorAll('.btn-server').forEach(b => b.classList.remove('active'));
-                const target = e.currentTarget;
-                target.classList.add('active');
-                const safeUrl = convertToEmbedUrl(server.url);
-                loadStream(safeUrl);
-            };
+        // 1. Channel Multi-selection (if more than 1 channel)
+        if (streamChannels.length > 1) {
+            const channelsHeader = document.createElement('div');
+            channelsHeader.style.cssText = "width: 100%; margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;";
 
-            streamServerSelector.appendChild(btn);
-        });
+            streamChannels.forEach((channel, cIdx) => {
+                const cBtn = document.createElement('button');
+                cBtn.className = `btn-server ${cIdx === currentSelectedChannelIdx ? 'active' : ''}`;
+                cBtn.style.cssText = "min-width: 120px; border-radius: 8px; font-weight: bold;";
+                cBtn.innerHTML = `<i class="fas fa-tv"></i> ${channel.name || `قناة ${cIdx + 1}`}`;
+
+                cBtn.onclick = () => {
+                    currentSelectedChannelIdx = cIdx;
+                    renderServerButtons();
+                    // Load first server of this channel
+                    if (channel.servers && channel.servers.length > 0) {
+                        loadStream(convertToEmbedUrl(channel.servers[0].url));
+                    }
+                };
+                channelsHeader.appendChild(cBtn);
+            });
+            streamServerSelector.appendChild(channelsHeader);
+        }
+
+        // 2. Servers for current channel
+        const currentChannel = streamChannels[currentSelectedChannelIdx] || streamChannels[0];
+        if (currentChannel && currentChannel.servers) {
+            const serversList = document.createElement('div');
+            serversList.style.cssText = "display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; width: 100%;";
+
+            currentChannel.servers.forEach((server, sIdx) => {
+                const btn = document.createElement('button');
+                btn.className = `btn-server ${sIdx === 0 && streamChannels.length === 1 ? 'premium' : ''}`;
+                const serverName = server.name || `سيرفر ${sIdx + 1}`;
+                btn.innerHTML = `<i class="fas fa-play"></i> ${serverName}`;
+
+                btn.onclick = (e) => {
+                    document.querySelectorAll('.servers-list .btn-server').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    loadStream(convertToEmbedUrl(server.url));
+                };
+
+                serversList.appendChild(btn);
+            });
+            serversList.className = 'servers-list';
+            streamServerSelector.appendChild(serversList);
+        }
     }
 
     // --- Stream Elements & State ---
@@ -2527,36 +2726,33 @@ document.addEventListener('DOMContentLoaded', () => {
         let savedToCloud = false;
 
         try {
-            // Collect current state directly from DOM to ensure latest values
-            const serverGroups = document.querySelectorAll('.server-input-group');
-            const currentServers = Array.from(serverGroups).map(group => ({
-                name: group.querySelector('.server-name')?.value.trim() || '',
-                url: group.querySelector('.server-url')?.value.trim() || ''
-            }));
+            // Collect current state from DOM
+            const channelGroups = document.querySelectorAll('.channel-group');
+            const processedChannels = Array.from(channelGroups).map(group => {
+                const name = group.querySelector('.channel-name')?.value.trim() || '';
+                const serverInputs = group.querySelectorAll('.server-input-group');
+                const servers = Array.from(serverInputs).map(si => ({
+                    name: si.querySelector('.server-name')?.value.trim() || '',
+                    url: convertToEmbedUrl(si.querySelector('.server-url')?.value.trim() || '')
+                })).filter(s => s.url !== '');
 
-            const validServers = currentServers.filter(s => s.url !== '');
+                return { name, servers };
+            }).filter(c => c.servers.length > 0);
 
-            // Auto-convert YouTube Links for all servers
-            const processedServers = validServers.map(s => ({
-                url: convertToEmbedUrl(s.url),
-                name: s.name
-            }));
-
-            // Collect Fallback URLs from inputs if they exist, else use variables
+            // Collect Fallback URLs
             const newsUrl = newsStreamUrlInput ? newsStreamUrlInput.value.trim() : newsStreamUrl;
             const docUrl = docStreamUrlInput ? docStreamUrlInput.value.trim() : docStreamUrl;
-
             const processedNewsUrl = convertToEmbedUrl(newsUrl);
             const processedDocUrl = convertToEmbedUrl(docUrl);
 
-            // Update local variables
-            streamServers = processedServers;
+            // Update local state
+            streamChannels = processedChannels;
             isMatchLive = matchStatusToggle ? matchStatusToggle.checked : isMatchLive;
             newsStreamUrl = processedNewsUrl;
             docStreamUrl = processedDocUrl;
 
             const settingsData = {
-                servers: processedServers,
+                channels: processedChannels,
                 isMatchLive: isMatchLive,
                 newsUrl: processedNewsUrl,
                 docUrl: processedDocUrl,
@@ -2581,13 +2777,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // 2. Always save locally (Backup)
-            localStorage.setItem('streamServers', JSON.stringify(processedServers));
+            localStorage.setItem('streamChannels', JSON.stringify(processedChannels));
             localStorage.setItem('isMatchLive', isMatchLive);
             localStorage.setItem('newsUrl', processedNewsUrl);
             localStorage.setItem('docUrl', processedDocUrl);
 
             // Refresh UI components
-            renderServerInputs();
+            renderChannelInputs();
             renderServerButtons();
             updateMatchStatusUI();
         } catch (err) {
@@ -2607,7 +2803,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Fetch Servers & Settings Function
+    // Fetch Channels & Settings Function
     async function fetchStreamServers() {
         let found = false;
 
@@ -2617,7 +2813,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const doc = await db.collection('settings').doc('liveStream').get();
                 if (doc.exists) {
                     const data = doc.data();
-                    if (data.servers) streamServers = data.servers;
+                    if (data.channels) {
+                        streamChannels = data.channels;
+                    } else if (data.servers) {
+                        // Migration: Wrap old flat servers in a default channel
+                        streamChannels = [{ name: 'سيرفرات البث', servers: data.servers }];
+                    }
                     if (data.isMatchLive !== undefined) isMatchLive = data.isMatchLive;
                     if (data.newsUrl !== undefined) newsStreamUrl = data.newsUrl;
                     if (data.docUrl !== undefined) docStreamUrl = data.docUrl;
@@ -2630,12 +2831,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 2. Fallback to LocalStorage
         if (!found) {
-            const localServers = localStorage.getItem('streamServers');
-            if (localServers) streamServers = JSON.parse(localServers);
+            const localChannels = localStorage.getItem('streamChannels');
+            if (localChannels) {
+                streamChannels = JSON.parse(localChannels);
+            } else {
+                const localServers = localStorage.getItem('streamServers');
+                if (localServers) {
+                    streamChannels = [{ name: 'سيرفرات البث', servers: JSON.parse(localServers) }];
+                }
+            }
 
             const localMatchStatus = localStorage.getItem('isMatchLive');
             if (localMatchStatus !== null) isMatchLive = (localMatchStatus === 'true');
-
             newsStreamUrl = localStorage.getItem('newsUrl') || '';
             docStreamUrl = localStorage.getItem('docUrl') || '';
         }
@@ -2646,7 +2853,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (docStreamUrlInput) docStreamUrlInput.value = docStreamUrl;
 
         updateMatchStatusUI();
-        renderServerInputs();
+        renderChannelInputs();
         renderServerButtons();
     }
 
@@ -2677,20 +2884,13 @@ document.addEventListener('DOMContentLoaded', () => {
             // Check Broadcast Status
             if (isMatchLive) {
                 // Normal Match Mode
-                if (streamServers.length > 0) {
-                    loadStream(streamServers[0].url);
-                    renderServerButtons();
-                    // Highlight first button
-                    setTimeout(() => {
-                        if (streamServerSelector?.children[0]) {
-                            // Reset all
-                            Array.from(streamServerSelector.children).forEach(b => {
-                                b.classList.remove('active');
-                            });
-                            // Highlight first
-                            streamServerSelector.children[0].classList.add('active');
-                        }
-                    }, 50);
+                if (streamChannels.length > 0) {
+                    const firstChannel = streamChannels[0];
+                    if (firstChannel.servers && firstChannel.servers.length > 0) {
+                        currentSelectedChannelIdx = 0;
+                        loadStream(convertToEmbedUrl(firstChannel.servers[0].url));
+                        renderServerButtons();
+                    }
                 }
             } else {
                 // Offline/Fallback Mode

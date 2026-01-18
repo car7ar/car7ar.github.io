@@ -187,6 +187,33 @@ button {
     border-color: var(--text-white);
 }
 
+.btn-secondary {
+    background: linear-gradient(135deg, rgba(38, 212, 127, 0.15), rgba(38, 212, 127, 0.05));
+    border: 1px solid rgba(38, 212, 127, 0.4);
+    color: var(--primary-green);
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(38, 212, 127, 0.1);
+}
+
+.btn-secondary:hover {
+    background: linear-gradient(135deg, rgba(38, 212, 127, 0.25), rgba(38, 212, 127, 0.15));
+    border-color: var(--primary-green);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(38, 212, 127, 0.3);
+}
+
+.btn-secondary i {
+    font-size: 14px;
+}
+
 /* Header */
 .main-header {
     padding: 20px 0;
@@ -197,6 +224,7 @@ button {
     z-index: 1000;
     background: transparent;
     transition: all 0.4s ease;
+    overflow: visible !important;
 }
 
 .main-header.scrolled {
@@ -213,6 +241,7 @@ button {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    overflow: visible !important;
 }
 
 .right-section,
@@ -220,6 +249,7 @@ button {
     display: flex;
     align-items: center;
     gap: 30px;
+    overflow: visible !important;
 }
 
 .logo {
@@ -334,7 +364,8 @@ button {
     /* Variable width based positioning */
     left: 50%;
     transform: translateX(-50%);
-    width: 150vw;
+    width: 100%;
+    max-width: 1000px;
     height: 40vh;
     background: radial-gradient(50% 100% at 50% 100%, #27D17F 0%, rgba(39, 209, 127, 0.4) 30%, rgba(5, 5, 5, 0) 70%);
     border-radius: 50%;
@@ -519,11 +550,11 @@ button {
 }
 
 .divider-line {
-    width: 500%;
-    /* Keep width for the flat curve */
+    width: 100%;
+    max-width: 100vw;
     box-shadow: rgb(0, 188, 109) 0px 80px 60px -30px inset, rgba(0, 188, 109, 0.5) 0px 40px 30px -8px inset, rgba(255, 255, 255, 0.4) 0px 20px 20px -6px inset, rgb(0, 188, 109) 0px 0px 20px -6px inset;
     border-radius: 100% 100% 0px 0px;
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 16 / 9;
     transform: translateX(-50%);
     left: 50%;
     position: absolute;
@@ -1133,6 +1164,24 @@ button {
 /* Mobile Responsive */
 @media (max-width: 768px) {
 
+    /* Global Overflow Prevention */
+    html,
+    body {
+        overflow-x: hidden;
+        max-width: 100vw;
+        position: relative;
+    }
+
+    * {
+        max-width: 100%;
+    }
+
+    .container {
+        padding: 0 15px;
+        max-width: 100vw;
+        overflow-x: hidden;
+    }
+
     /* Header */
     .desktop-nav {
         display: none;
@@ -1141,9 +1190,10 @@ button {
     .profile-dropdown {
         left: 0 !important;
         right: auto !important;
-        min-width: 200px;
-        width: 85vw;
-        max-width: 280px;
+        min-width: 220px;
+        width: auto;
+        max-width: 90vw;
+        z-index: 10001 !important;
     }
 
     .profile-dropdown::before {
@@ -1260,6 +1310,99 @@ button {
     /* FAQ */
     .faq-btn {
         font-size: 16px;
+    }
+
+    /* Hero Section Mobile Fixes */
+    .hero-section {
+        overflow: hidden;
+        max-width: 100vw;
+    }
+
+    .hero-glow {
+        max-width: 100vw;
+        width: 100vw;
+        left: 0;
+        transform: none;
+    }
+
+    .hero-visuals {
+        max-width: 100vw;
+    }
+
+    /* Divider Fixes */
+    .divider-wrapper {
+        max-width: 100vw;
+        overflow: hidden;
+        width: 100%;
+    }
+
+    .divider-line {
+        max-width: 100vw;
+        width: 100vw;
+        left: 50%;
+    }
+
+    /* Scroll Track Fixes */
+    .horizontal-scroll {
+        margin: 0;
+        padding: 20px 0 60px;
+        max-width: 100vw;
+        overflow-x: auto;
+    }
+
+    .scroll-track {
+        padding: 0 20px;
+        max-width: none;
+    }
+
+    .content-card {
+        min-width: 240px;
+    }
+
+    /* Team Section */
+    .team-scroll-container {
+        max-width: 100vw;
+        overflow-x: auto;
+    }
+
+    .team-track {
+        padding: 0 20px;
+    }
+
+    .player-card {
+        width: 160px;
+    }
+
+    .player-img {
+        width: 160px;
+        height: 200px;
+    }
+
+    /* Wallpapers Section */
+    .wallpapers-section {
+        max-width: 100vw;
+        overflow: hidden;
+    }
+
+    .wallpaper-card.mobile {
+        min-width: 200px;
+        width: 200px;
+    }
+
+    .wallpaper-card.mobile .card-img {
+        height: 320px;
+    }
+
+    /* News Grid */
+    .news-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    /* Programs Grid */
+    .programs-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
     }
 }
 
@@ -1503,6 +1646,7 @@ button {
 .profile-container {
     position: relative;
     display: none;
+    z-index: 10000;
 }
 
 .profile-container.active {
@@ -1548,14 +1692,15 @@ button {
     visibility: hidden;
     transform: translateY(-10px);
     transition: all 0.3s ease;
-    z-index: 1000;
+    z-index: 10001;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
 .profile-container.open .profile-dropdown {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
+    display: block !important;
 }
 
 .profile-dropdown::before {
@@ -1890,13 +2035,25 @@ button {
 
 @media (max-width: 768px) {
     .profile-dropdown {
-        left: auto;
-        right: 0;
+        left: 0;
+        right: auto;
+        z-index: 10001 !important;
+        min-width: 220px;
+        max-width: 90vw;
     }
 
     .profile-dropdown::before {
-        left: auto;
-        right: 20px;
+        left: 20px;
+        right: auto;
+    }
+
+    /* Ensure profile container has proper z-index */
+    .profile-container {
+        z-index: 10000;
+    }
+
+    .profile-container.open {
+        z-index: 10001;
     }
 
     .profile-modal-content {
