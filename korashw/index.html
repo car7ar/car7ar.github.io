@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>90 Show | 90 شو - المنصة الاحترافية للبث المباشر</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#020202">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Noto+Kufi+Arabic:wght@400;700;900&display=swap"
+        rel="stylesheet">
+
+    <!-- CSS Dependencies -->
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="app-container">
+        <header>
+            <div class="logo">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent-neon)" stroke-width="3"
+                    stroke-linecap="round" stroke-linejoin="round"
+                    style="filter: drop-shadow(0 0 8px var(--accent-glow)); margin-left: 5px;">
+                    <path d="M2 8V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-16a2 2 0 0 1-2-2v-2"></path>
+                    <path d="M2 12h10"></path>
+                    <path d="m9 15 3-3-3-3"></path>
+                </svg>
+                <span>90s</span><span>شو</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div id="status-text" style="font-size: 11px; color: var(--text-muted); font-weight: 700;">
+                    المنصة الرسمية للبث المباشر
+                </div>
+                <a href="kids.html" class="kids-trigger">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" />
+                        <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+                        <line x1="9" y1="9" x2="9.01" y2="9" />
+                        <line x1="15" y1="9" x2="15.01" y2="9" />
+                    </svg>
+                    <span>أطفالي</span>
+                </a>
+                <div class="login-trigger" onclick="toggleAdmin()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                </div>
+            </div>
+        </header>
+
+        <div class="hub-wrapper">
+            <div class="hub-label">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
+                    <polyline points="17 2 12 7 7 2"></polyline>
+                </svg>
+                <span>القنوات</span>
+            </div>
+            <nav class="channels-hub" id="channel-list">
+                <!-- Channels injected here -->
+            </nav>
+        </div>
+
+        <div class="player-container-modern" id="player-container">
+            <div class="live-indicator-on-screen">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                    stroke-linecap="round" stroke-linejoin="round" style="margin-left: 5px; opacity: 0.9;">
+                    <path d="M5 12h14"></path>
+                    <path d="M12 5v14"></path>
+                </svg>
+                <div class="live-dot"></div>
+                بث مباشر (Ultra HD)
+            </div>
+
+            <video id="player" playsinline controls crossorigin></video>
+        </div>
+
+        <div id="server-switcher" class="server-switcher">
+            <!-- Quality buttons injected here -->
+        </div>
+
+        <div class="info-alert">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span>بعض السيرفرات قد تستغرق وقتاً للعمل. في حال لم يعمل البث، <span class="refresh-hint">يرجى تحديث
+                    الصفحة.</span></span>
+        </div>
+
+        <footer>
+            <div class="footer-content">
+                <p>&copy; 2026 جميع الحقوق محفوظة لمنصة 90 شو</p>
+                <div class="footer-links">
+                    <span>v2.0.3 النسخة الممتازة</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal-overlay" onclick="closeModal(event, 'login-modal')">
+        <div class="modal-content">
+            <div class="modal-header" style="text-align: center; margin-bottom: 20px;">
+                <h2 style="margin-bottom: 10px;">تسجيل الدخول</h2>
+                <p style="font-size: 12px; color: var(--text-muted);">لوحة تحكم المشرف</p>
+            </div>
+            <div class="input-group">
+                <label>اسم المستخدم</label>
+                <input type="text" id="username" placeholder="admin">
+            </div>
+            <div class="input-group">
+                <label>كلمة المرور</label>
+                <input type="password" id="password" placeholder="••••••••">
+            </div>
+            <button class="btn-primary" onclick="handleLogin()">دخول</button>
+        </div>
+    </div>
+
+    <!-- Admin Panel Modal -->
+    <div id="admin-panel" class="modal-overlay" onclick="closeModal(event, 'admin-panel')">
+        <div class="modal-content admin-modal">
+            <button class="modal-close-x" onclick="document.getElementById('admin-panel').style.display = 'none'">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <div class="admin-tabs">
+                <button class="tab-btn active" onclick="switchAdminTab('channels-tab')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="7" width="20" height="15" rx="2" ry="2" />
+                        <polyline points="17 2 12 7 7 2" />
+                    </svg>
+                    إدارة القنوات
+                </button>
+                <button class="tab-btn" onclick="switchAdminTab('kids-channels-tab')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+                        <line x1="9" y1="9" x2="9.01" y2="9" />
+                        <line x1="15" y1="9" x2="15.01" y2="9" />
+                    </svg>
+                    قنوات الأطفال
+                </button>
+                <button class="tab-btn" onclick="switchAdminTab('settings-tab')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3" />
+                        <path
+                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                    </svg>
+                    إعدادات المنصة
+                </button>
+            </div>
+
+            <!-- Channels Tab Content -->
+            <div id="channels-tab" class="tab-content">
+                <div class="modal-header"
+                    style="display: flex; justify-content: space-between; align-items: center; text-align: right; margin-bottom: 30px;">
+                    <div>
+                        <h2 style="color: var(--accent-neon); margin-bottom: 5px;">لوحة تحكم القنوات</h2>
+                        <p style="font-size: 12px; color: var(--text-muted);">إدارة السيرفرات والبث المباشر</p>
+                    </div>
+                    <button class="btn-primary btn-sm" style="width: auto; padding: 10px 20px;"
+                        onclick="showChannelForm()">إضافة قناة جديدة +</button>
+                </div>
+
+                <div id="channel-form"
+                    style="display: none; margin-bottom: 30px; padding: 25px; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px solid var(--glass-stroke);">
+                    <input type="hidden" id="edit-id">
+                    <div class="input-group">
+                        <label>اسم القناة</label>
+                        <input type="text" id="ch-name" placeholder="90 شو 1">
+                    </div>
+
+                    <div id="server-inputs-container">
+                        <label
+                            style="display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 10px; font-weight: 800;">السيرفرات
+                            والروابط</label>
+                        <!-- Row templates injected here -->
+                    </div>
+
+                    <button class="btn-primary btn-outline btn-sm" style="margin-bottom: 20px; width: auto;"
+                        onclick="addServerInputRow()">+ إضافة سيرفر آخر</button>
+
+                    <div style="display: flex; gap: 15px;">
+                        <button class="btn-primary" style="flex: 1;" onclick="saveChannel()">حفظ القناة بالكامل</button>
+                        <button class="btn-primary btn-outline" style="flex: 1;"
+                            onclick="hideChannelForm()">إلغاء</button>
+                    </div>
+                </div>
+
+                <div class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>اسم القناة</th>
+                                <th>السيرفرات</th>
+                                <th style="text-align: left;">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-channel-list">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Kids Channels Tab Content -->
+            <div id="kids-channels-tab" class="tab-content" style="display: none;">
+                <div class="modal-header"
+                    style="display: flex; justify-content: space-between; align-items: center; text-align: right; margin-bottom: 30px;">
+                    <div>
+                        <h2 style="color: #FF6B9D; margin-bottom: 5px;">إدارة قنوات الأطفال</h2>
+                        <p style="font-size: 12px; color: var(--text-muted);">محتوى آمن ومناسب للأطفال</p>
+                    </div>
+                    <button class="btn-primary btn-sm" style="width: auto; padding: 10px 20px; background: #FF6B9D;"
+                        onclick="showKidsChannelForm()">إضافة قناة أطفال +</button>
+                </div>
+
+                <div id="kids-channel-form"
+                    style="display: none; margin-bottom: 30px; padding: 25px; background: rgba(255,107,157,0.05); border-radius: 16px; border: 1px solid rgba(255,107,157,0.2);">
+                    <input type="hidden" id="kids-edit-id">
+                    <div class="input-group">
+                        <label>اسم القناة</label>
+                        <input type="text" id="kids-ch-name" placeholder="قناة الأطفال 1">
+                    </div>
+
+                    <div id="kids-server-inputs-container">
+                        <label
+                            style="display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 10px; font-weight: 800;">السيرفرات
+                            والروابط</label>
+                        <!-- Row templates injected here -->
+                    </div>
+
+                    <button class="btn-primary btn-outline btn-sm" style="margin-bottom: 20px; width: auto;"
+                        onclick="addKidsServerInputRow()">+ إضافة سيرفر آخر</button>
+
+                    <div style="display: flex; gap: 15px;">
+                        <button class="btn-primary" style="flex: 1; background: #FF6B9D;"
+                            onclick="saveKidsChannel()">حفظ القناة</button>
+                        <button class="btn-primary btn-outline" style="flex: 1;"
+                            onclick="hideKidsChannelForm()">إلغاء</button>
+                    </div>
+                </div>
+
+                <div class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>اسم القناة</th>
+                                <th>السيرفرات</th>
+                                <th style="text-align: left;">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-kids-channel-list">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Settings Tab Content -->
+            <div id="settings-tab" class="tab-content" style="display: none;">
+                <div class="modal-header">
+                    <h2 style="color: var(--accent-neon); margin-bottom: 5px;">إعدادات المنصة</h2>
+                    <p style="font-size: 12px; color: var(--text-muted);">تعديل معلومات الموقع والروابط العامة</p>
+                </div>
+
+                <div
+                    style="padding: 25px; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px solid var(--glass-stroke);">
+                    <div class="input-group">
+                        <label>نص الحالة (Status Text)</label>
+                        <input type="text" id="site-status-text" placeholder="المنصة الرسمية للبث المباشر">
+                    </div>
+                    <div class="input-group">
+                        <label>عنوان الموقع</label>
+                        <input type="text" id="site-title" placeholder="90s شو">
+                    </div>
+                    <button class="btn-primary" onclick="alert('تم حفظ الإعدادات بنجاح')">حفظ التغييرات</button>
+                </div>
+            </div>
+
+            <div style="margin-top: 40px; display: flex; justify-content: space-between; align-items: center;">
+                <button class="btn-primary btn-secondary btn-sm" style="width: auto; padding: 10px 25px;"
+                    onclick="handleLogout()">تسجيل الخروج</button>
+                <div style="text-align: left;">
+                    <p style="font-size: 11px; color: var(--text-muted); font-weight: 800;">90 SHOW ADMIN</p>
+                    <p style="font-size: 9px; color: var(--accent-neon); opacity: 0.8;">النسخة الاحترافية v2.0.3</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
